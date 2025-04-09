@@ -19,6 +19,9 @@ app.use('/api/auth', authRoutes);
 const workerRoutes = require('./routes/workerRoutes');
 app.use('/api/workers', workerRoutes);
 
+const serviceRoutes = require('./routes/serviceRoutes');
+app.use('/api/services', serviceRoutes);
+
 
 // Start server AFTER everything is set up
 const port = process.env.PORT || 5001;
