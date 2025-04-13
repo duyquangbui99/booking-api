@@ -25,6 +25,11 @@ app.use('/api/services', serviceRoutes);
 const bookingRoutes = require('./routes/bookingRoutes');
 app.use('/api/bookings', bookingRoutes)
 
+const socialMediaRoutes = require('./routes/socialMediaRoutes');
+app.use('/api/socialmedia', socialMediaRoutes);
+
+
+
 
 // Start server AFTER everything is set up
 const port = process.env.PORT || 5001;
