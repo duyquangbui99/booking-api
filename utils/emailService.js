@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
 
 exports.sendBookingConfirmation = async ({ customerEmail, customerName, ownerEmail, workerName, services, startTime }) => {
     const formattedTime = new Date(startTime).toLocaleString();
-    const serviceList = services.map(s => `• ${s.name} (${s.duration} mins)`).join('\n');
+    // const serviceList = services.map(s => `• ${s.name} (${s.duration} mins)`).join('\n');
 
     const customerMsg = `
   <div style="max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; font-family: 'Helvetica Neue', Arial, sans-serif; color: #333333; line-height: 1.5; border: 1px solid #eeeeee; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);">
