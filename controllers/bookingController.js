@@ -1,15 +1,22 @@
 const Booking = require('../models/Booking');
 const Worker = require('../models/Worker');
 const Service = require('../models/Service');
+const { sendBookingConfirmation } = require('../utils/emailService');
 
 // Create a new booking
 exports.createBooking = async (req, res) => {
     try {
-        const { customerName, customerPhone, workerId, serviceIds, startTime } = req.body;
+        const { customerName, customerPhone, customerEmail, workerId, serviceIds, startTime } = req.body;
 
         // Validate input
-        if (!customerName || !customerPhone || !workerId || !serviceIds || !startTime) {
+        if (!customerName || !customerPhone || !customerEmail || !workerId || !serviceIds || !startTime) {
             return res.status(400).json({ message: 'Missing required fields' });
+        }
+
+        // Validate email format
+        const emailRegex = /^\S+@\S+\.\S+$/;
+        if (!emailRegex.test(customerEmail)) {
+            return res.status(400).json({ message: 'Invalid email format' });
         }
 
         // Fetch services to calculate total duration
@@ -18,21 +25,35 @@ exports.createBooking = async (req, res) => {
             return res.status(400).json({ message: 'One or more services not found' });
         }
 
-        const totalDuration = services.reduce((acc, svc) => acc + svc.duration, 0); // in minutes
+        const totalDuration = services.reduce((acc, svc) => acc + svc.duration, 0);
 
         // Create booking
         const newBooking = new Booking({
             customerName,
             customerPhone,
+            customerEmail,
             workerId,
             serviceIds,
             startTime: new Date(startTime),
-            duration: totalDuration
+            duration: totalDuration,
+            status: 'booked'
         });
+
+        const worker = await Worker.findById(workerId);
+        if (!worker) {
+            return res.status(400).json({ message: 'Worker not found' });
+        }
 
         const savedBooking = await newBooking.save();
 
-        // Optionally update worker's timeSlotsTaken here in the future
+        await sendBookingConfirmation({
+            customerEmail,
+            customerName,
+            ownerEmail: process.env.EMAIL_USER, // your business email
+            workerName: worker.name,
+            services,
+            startTime
+        });
 
         res.status(201).json({ message: 'Booking created', booking: savedBooking });
     } catch (err) {
@@ -40,6 +61,7 @@ exports.createBooking = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
+
 
 //GET ALL bookings
 exports.getAllBookings = async (req, res) => {
@@ -74,11 +96,20 @@ exports.getWorkerBookings = async (req, res) => {
 exports.updateBooking = async (req, res) => {
     try {
         const { bookingId } = req.params;
-        const { customerName, customerPhone, workerId, serviceIds, startTime, status } = req.body;
+        const { customerName, customerPhone, customerEmail, workerId, serviceIds, startTime, status } = req.body;
 
         const booking = await Booking.findById(bookingId);
         if (!booking) {
             return res.status(404).json({ message: 'Booking not found' });
+        }
+
+        // Validate email if updating
+        if (customerEmail) {
+            const emailRegex = /^\S+@\S+\.\S+$/;
+            if (!emailRegex.test(customerEmail)) {
+                return res.status(400).json({ message: 'Invalid email format' });
+            }
+            booking.customerEmail = customerEmail;
         }
 
         // Validate and update services + duration
