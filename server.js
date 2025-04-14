@@ -28,6 +28,8 @@ app.use('/api/bookings', bookingRoutes)
 const socialMediaRoutes = require('./routes/socialMediaRoutes');
 app.use('/api/socialmedia', socialMediaRoutes);
 
+const gptRoutes = require('./routes/gptRoutes');
+app.use('/api/gpt', gptRoutes);
 
 
 
