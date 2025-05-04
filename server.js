@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const connectDB = require('./config/db');
+const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const app = express();
 
@@ -10,6 +11,7 @@ app.use(cors({
     credentials: true
 }));
 
+app.use(cookieParser());
 app.use(express.json());
 
 // connect to Mongo
