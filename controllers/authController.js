@@ -4,8 +4,6 @@ const jwt = require('jsonwebtoken');
 
 exports.login = async (req, res) => {
     const { name, pin } = req.body;
-    console.log("Login request received:", { name, pin });
-
     try {
         const user = await User.findOne({ name });
         if (!user) return res.status(404).json({ message: 'User not found' });
