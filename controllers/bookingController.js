@@ -77,6 +77,38 @@ exports.getAllBookings = async (req, res) => {
     }
 };
 
+// GET bookings in a date range
+exports.getBookingsByDateRange = async (req, res) => {
+    try {
+        const { start, end } = req.query;
+
+        if (!start || !end) {
+            return res.status(400).json({ message: 'Start and end dates are required' });
+        }
+
+        // Set start to 00:00:00.000Z and end to 23:59:59.999Z
+        const startDate = new Date(start);
+        startDate.setUTCHours(0, 0, 0, 0);
+
+        const endDate = new Date(end);
+        endDate.setUTCHours(23, 59, 59, 999);
+
+        const bookings = await Booking.find({
+            startTime: {
+                $gte: startDate,
+                $lte: endDate
+            }
+        })
+            .populate('workerId', 'name')
+            .populate('serviceIds', 'name duration');
+
+        res.json(bookings);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};
+
 //get the specific worker's booking 
 exports.getWorkerBookings = async (req, res) => {
     try {
@@ -92,6 +124,31 @@ exports.getWorkerBookings = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+
+// GET /api/bookings/worker/:workerId?start=...&end=...
+exports.getWorkerBookingsInRange = async (req, res) => {
+    try {
+        const { workerId } = req.params;
+        const { start, end } = req.query;
+
+        const bookings = await Booking.find({
+            workerId,
+            startTime: {
+                $gte: new Date(start),
+                $lte: new Date(end)
+            }
+        })
+            .populate('workerId', 'name')
+            .populate('serviceIds', 'name duration');
+
+        res.json(bookings);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 // Update booking
 exports.updateBooking = async (req, res) => {
     try {

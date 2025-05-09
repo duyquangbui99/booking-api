@@ -32,7 +32,11 @@ exports.login = async (req, res) => {
             maxAge: 24 * 60 * 60 * 1000 // 1 day
         });
 
-        res.json({ token, role: user.role });
+        res.json({
+            token,
+            role: user.role,
+            ...(user.role === 'worker' && { workerId: user.workerId })
+        });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
