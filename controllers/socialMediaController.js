@@ -1,24 +1,28 @@
 const axios = require('axios');
+const FormData = require('form-data');
 
 const PAGE_ID = process.env.FB_PAGE_ID;
 const PAGE_ACCESS_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
 
 exports.createFacebookPost = async (req, res) => {
     try {
-        const { caption, imageUrl } = req.body;
+        const { caption } = req.body;
+        const file = req.file;
 
-        if (!caption || !imageUrl) {
-            return res.status(400).json({ message: 'Caption and imageUrl are required' });
+        if (!caption || !file) {
+            return res.status(400).json({ message: 'Caption and image file are required' });
         }
 
-        const url = `https://graph.facebook.com/v17.0/${PAGE_ID}/photos`;
+        const form = new FormData();
+        form.append('caption', caption);
+        form.append('source', file.buffer, {
+            filename: file.originalname,
+            contentType: file.mimetype
+        });
 
-        const response = await axios.post(url, null, {
-            params: {
-                url: imageUrl,
-                caption,
-                access_token: PAGE_ACCESS_TOKEN
-            }
+        const url = `https://graph.facebook.com/v17.0/${PAGE_ID}/photos?access_token=${PAGE_ACCESS_TOKEN}`;
+        const response = await axios.post(url, form, {
+            headers: form.getHeaders()
         });
 
         res.status(200).json({

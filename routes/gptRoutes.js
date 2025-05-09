@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { generateCaption } = require('../controllers/gptController');
+const { generateCaptionFromUpload } = require('../controllers/gptController');
 
-router.post('/caption', generateCaption);
+router.post('/caption', generateCaptionFromUpload);
 
 module.exports = router;

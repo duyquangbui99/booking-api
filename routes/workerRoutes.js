@@ -6,8 +6,8 @@ const { auth } = require('../middleware/auth');
 
 // Admin-only routes
 router.post('/create', auth(['admin']), workerController.createWorker);
-router.get('/', auth(['admin']), workerController.getAllWorkers);
-router.get('/:id', auth(['admin']), workerController.getWorkerById);
+router.get('/', workerController.getAllWorkers);
+router.get('/:id', workerController.getWorkerById);
 router.put('/:id', auth(['admin']), workerController.updateWorker);
 router.delete('/:id', auth(['admin']), workerController.deleteWorker);
 
