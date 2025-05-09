@@ -38,3 +38,30 @@ exports.generateCaption = async (req, res) => {
         res.status(500).json({ message: 'Failed to generate caption', error: error.message });
     }
 };
+// exports.generateCaption = async (req, res) => {
+//     const { description } = req.body;
+
+//     if (!description) {
+//         return res.status(400).json({ message: 'Description is required' });
+//     }
+
+//     try {
+//         const response = await openai.chat.completions.create({
+//             model: 'gpt-4o',
+//             messages: [
+//                 {
+//                     role: 'user',
+//                     content: `Generate a short, fun caption for a beauty salon Instagram post. 
+// Based on this look: "${description}". The caption should include at least one beauty-related hashtag and must end with: #TranquilityNailsSpa #Tulsa`
+//                 }
+//             ],
+//             max_tokens: 100
+//         });
+
+//         const caption = response.choices[0]?.message?.content;
+//         res.json({ caption });
+//     } catch (error) {
+//         console.error('GPT error:', error?.response?.data || error.message);
+//         res.status(500).json({ message: 'Failed to generate caption', error: error.message });
+//     }
+// };
