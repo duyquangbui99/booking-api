@@ -23,8 +23,8 @@ const workerSchema = new mongoose.Schema({
         required: true
     },
     workingHours: {
-        start: { type: String, default: "09:00" },
-        end: { type: String, default: "17:00" }
+        start: { type: String, default: "09:30" },
+        end: { type: String, default: "19:30" }
     }
 });
 
