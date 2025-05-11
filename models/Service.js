@@ -17,7 +17,12 @@ const serviceSchema = new mongoose.Schema({
     description: {
         type: String,
         default: ''
-    }
+    },
+    categoryId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ServiceCategory',
+        required: true
+    },
 });
 
 module.exports = mongoose.model('Service', serviceSchema);
