@@ -3,15 +3,18 @@ const Service = require('../models/Service');
 // Create a new service
 exports.createService = async (req, res) => {
     try {
-        const { name, price, duration, description } = req.body;
+        const { name, price, duration, description, categoryId } = req.body;
 
-        // Check if name already exists
+        if (!categoryId) {
+            return res.status(400).json({ message: 'Category ID is required' });
+        }
+
         const existing = await Service.findOne({ name });
         if (existing) {
             return res.status(400).json({ message: 'Service name already exists' });
         }
 
-        const newService = new Service({ name, price, duration, description });
+        const newService = new Service({ name, price, duration, description, categoryId });
         const savedService = await newService.save();
 
         res.status(201).json({ message: 'Service created', service: savedService });

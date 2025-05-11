@@ -28,6 +28,9 @@ app.use('/api/auth', authRoutes);
 const workerRoutes = require('./routes/workerRoutes');
 app.use('/api/workers', workerRoutes);
 
+const serviceCategoryRoutes = require('./routes/serviceCategoryRoutes');
+app.use('/api/service-categories', serviceCategoryRoutes);
+
 const serviceRoutes = require('./routes/serviceRoutes');
 app.use('/api/services', serviceRoutes);
 
