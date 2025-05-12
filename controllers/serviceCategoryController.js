@@ -45,3 +45,24 @@ exports.getCategoryById = async (req, res) => {
         res.status(500).json({ message: 'Server error', error: err.message });
     }
 };
+
+//Delete later:
+exports.updateCategory = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, color } = req.body;
+
+        const category = await ServiceCategory.findById(id);
+        if (!category) {
+            return res.status(404).json({ message: 'Category not found' });
+        }
+
+        if (name) category.name = name;
+        if (color) category.color = color;
+
+        const updated = await category.save();
+        res.json({ message: 'Category updated', category: updated });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', error: err.message });
+    }
+};
