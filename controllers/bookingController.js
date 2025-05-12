@@ -6,34 +6,41 @@ const { sendBookingConfirmation } = require('../utils/emailService');
 // Create a new booking
 exports.createBooking = async (req, res) => {
     try {
-        const { customerName, customerPhone, customerEmail, workerId, serviceIds, startTime } = req.body;
+        const { customerName, customerPhone, customerEmail, workerId, services, startTime } = req.body;
 
-        // Validate input
-        if (!customerName || !customerPhone || !customerEmail || !workerId || !serviceIds || !startTime) {
+        if (!customerName || !customerPhone || !customerEmail || !workerId || !services || !startTime) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
-        // Validate email format
         const emailRegex = /^\S+@\S+\.\S+$/;
         if (!emailRegex.test(customerEmail)) {
             return res.status(400).json({ message: 'Invalid email format' });
         }
 
-        // Fetch services to calculate total duration
-        const services = await Service.find({ _id: { $in: serviceIds } });
-        if (services.length !== serviceIds.length) {
+        if (!Array.isArray(services) || services.length === 0) {
+            return res.status(400).json({ message: 'Services must be a non-empty array' });
+        }
+
+        const serviceIds = services.map(item => item.serviceId);
+        const serviceDocs = await Service.find({ _id: { $in: serviceIds } });
+
+        if (serviceDocs.length !== serviceIds.length) {
             return res.status(400).json({ message: 'One or more services not found' });
         }
 
-        const totalDuration = services.reduce((acc, svc) => acc + svc.duration, 0);
+        let totalDuration = 0;
+        for (const item of services) {
+            const svc = serviceDocs.find(s => s._id.toString() === item.serviceId);
+            const quantity = item.quantity || 1;
+            totalDuration += (svc?.duration || 0) * quantity;
+        }
 
-        // Create booking
         const newBooking = new Booking({
             customerName,
             customerPhone,
             customerEmail,
             workerId,
-            serviceIds,
+            services,
             startTime: new Date(startTime),
             duration: totalDuration,
             status: 'booked'
@@ -49,9 +56,9 @@ exports.createBooking = async (req, res) => {
         await sendBookingConfirmation({
             customerEmail,
             customerName,
-            ownerEmail: process.env.EMAIL_USER, // your business email
+            ownerEmail: process.env.EMAIL_USER,
             workerName: worker.name,
-            services,
+            services: serviceDocs,
             startTime
         });
 
@@ -62,13 +69,12 @@ exports.createBooking = async (req, res) => {
     }
 };
 
-
-//GET ALL bookings
+// GET ALL bookings
 exports.getAllBookings = async (req, res) => {
     try {
         const bookings = await Booking.find()
-            .populate('workerId', 'name') // only get worker name
-            .populate('serviceIds', 'name duration'); // only get service name + duration
+            .populate('workerId', 'name')
+            .populate('services.serviceId', 'name duration');
 
         res.json(bookings);
     } catch (err) {
@@ -86,7 +92,6 @@ exports.getBookingsByDateRange = async (req, res) => {
             return res.status(400).json({ message: 'Start and end dates are required' });
         }
 
-        // Set start to 00:00:00.000Z and end to 23:59:59.999Z
         const startDate = new Date(start);
         startDate.setUTCHours(0, 0, 0, 0);
 
@@ -100,7 +105,7 @@ exports.getBookingsByDateRange = async (req, res) => {
             }
         })
             .populate('workerId', 'name')
-            .populate('serviceIds', 'name duration');
+            .populate('services.serviceId', 'name duration');
 
         res.json(bookings);
     } catch (err) {
@@ -109,14 +114,14 @@ exports.getBookingsByDateRange = async (req, res) => {
     }
 };
 
-//get the specific worker's booking 
+// GET specific worker's bookings
 exports.getWorkerBookings = async (req, res) => {
     try {
         const { workerId } = req.params;
 
         const bookings = await Booking.find({ workerId })
             .populate('workerId', 'name')
-            .populate('serviceIds', 'name duration');
+            .populate('services.serviceId', 'name duration');
 
         res.json(bookings);
     } catch (err) {
@@ -125,8 +130,7 @@ exports.getWorkerBookings = async (req, res) => {
     }
 };
 
-
-// GET /api/bookings/worker/:workerId?start=...&end=...
+// GET worker bookings in range
 exports.getWorkerBookingsInRange = async (req, res) => {
     try {
         const { workerId } = req.params;
@@ -140,7 +144,7 @@ exports.getWorkerBookingsInRange = async (req, res) => {
             }
         })
             .populate('workerId', 'name')
-            .populate('serviceIds', 'name duration');
+            .populate('services.serviceId', 'name duration');
 
         res.json(bookings);
     } catch (err) {
@@ -153,14 +157,13 @@ exports.getWorkerBookingsInRange = async (req, res) => {
 exports.updateBooking = async (req, res) => {
     try {
         const { bookingId } = req.params;
-        const { customerName, customerPhone, customerEmail, workerId, serviceIds, startTime, status } = req.body;
+        const { customerName, customerPhone, customerEmail, workerId, services, startTime, status } = req.body;
 
         const booking = await Booking.findById(bookingId);
         if (!booking) {
             return res.status(404).json({ message: 'Booking not found' });
         }
 
-        // Validate email if updating
         if (customerEmail) {
             const emailRegex = /^\S+@\S+\.\S+$/;
             if (!emailRegex.test(customerEmail)) {
@@ -169,18 +172,24 @@ exports.updateBooking = async (req, res) => {
             booking.customerEmail = customerEmail;
         }
 
-        // Validate and update services + duration
         let duration = booking.duration;
-        if (serviceIds) {
-            const services = await Service.find({ _id: { $in: serviceIds } });
-            if (services.length !== serviceIds.length) {
+        if (services) {
+            const serviceIds = services.map(item => item.serviceId);
+            const serviceDocs = await Service.find({ _id: { $in: serviceIds } });
+
+            if (serviceDocs.length !== serviceIds.length) {
                 return res.status(400).json({ message: 'One or more services not found' });
             }
-            duration = services.reduce((acc, s) => acc + s.duration, 0);
-            booking.serviceIds = serviceIds;
+
+            duration = 0;
+            for (const item of services) {
+                const svc = serviceDocs.find(s => s._id.toString() === item.serviceId);
+                const quantity = item.quantity || 1;
+                duration += (svc?.duration || 0) * quantity;
+            }
+            booking.services = services;
         }
 
-        // Validate and update workerId
         if (workerId && workerId.toString() !== booking.workerId.toString()) {
             const workerExists = await Worker.findById(workerId);
             if (!workerExists) {
@@ -189,7 +198,6 @@ exports.updateBooking = async (req, res) => {
             booking.workerId = workerId;
         }
 
-        // Apply updates
         if (customerName) booking.customerName = customerName;
         if (customerPhone) booking.customerPhone = customerPhone;
         if (startTime) booking.startTime = new Date(startTime);
@@ -206,7 +214,7 @@ exports.updateBooking = async (req, res) => {
     }
 };
 
-//DELETE booking
+// DELETE booking
 exports.deleteBooking = async (req, res) => {
     try {
         const { bookingId } = req.params;
