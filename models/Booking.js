@@ -11,7 +11,10 @@ const bookingSchema = new mongoose.Schema({
         match: [/^\S+@\S+\.\S+$/, 'Please enter a valid email address']
     },
     workerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Worker', required: true },
-    serviceIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Service', required: true }],
+    services: [{
+        serviceId: { type: mongoose.Schema.Types.ObjectId, ref: 'Service', required: true },
+        quantity: { type: Number, default: 1 }
+    }],
     startTime: {
         type: Date,
         required: true
