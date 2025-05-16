@@ -35,7 +35,10 @@ const serviceRoutes = require('./routes/serviceRoutes');
 app.use('/api/services', serviceRoutes);
 
 const bookingRoutes = require('./routes/bookingRoutes');
-app.use('/api/bookings', bookingRoutes)
+app.use('/api/bookings', bookingRoutes);
+
+const allowBookingRoutes = require('./routes/allowBookingRoutes');
+app.use('/api/setting', allowBookingRoutes);
 
 const socialMediaRoutes = require('./routes/socialMediaRoutes');
 app.use('/api/socialmedia', socialMediaRoutes);
