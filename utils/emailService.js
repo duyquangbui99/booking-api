@@ -1,18 +1,21 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-    }
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
 });
 
 exports.sendBookingConfirmation = async ({ customerEmail, customerName, ownerEmail, workerName, services, startTime }) => {
-    const formattedTime = new Date(startTime).toLocaleString();
-    // const serviceList = services.map(s => `• ${s.name} (${s.duration} mins)`).join('\n');
+  // const formattedTime = new Date(startTime).toLocaleString();
+  // const serviceList = services.map(s => `• ${s.name} (${s.duration} mins)`).join('\n');
+  const utcDate = new Date(startTime);
+  const localDateString = utcDate.toLocaleString('en-US', { timeZone: 'America/Chicago' });
 
-    const customerMsg = `
+
+  const customerMsg = `
   <div style="max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; font-family: 'Helvetica Neue', Arial, sans-serif; color: #333333; line-height: 1.5; border: 1px solid #eeeeee; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);">
     <!-- Header with Logo -->
     <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eeeeee;">
@@ -29,7 +32,7 @@ exports.sendBookingConfirmation = async ({ customerEmail, customerName, ownerEma
     <!-- Appointment Details -->
     <div style="background-color: #f0f7f4; padding: 20px; border-radius: 6px; margin-bottom: 25px;">
       <h3 style="color: #3e9776; margin-top: 0; font-weight: 400;">Appointment Details</h3>
-      <p style="margin-bottom: 5px;"><strong>Date & Time:</strong> <span style="color: #3e9776;">${formattedTime}</span></p>
+      <p style="margin-bottom: 5px;"><strong>Date & Time:</strong> <span style="color: #3e9776;">${localDateString}</span></p>
       <p style="margin-bottom: 5px;"><strong>Spa Specialist:</strong> ${workerName}</p>
       
       <div style="margin-top: 15px;">
@@ -69,7 +72,7 @@ exports.sendBookingConfirmation = async ({ customerEmail, customerName, ownerEma
 `;
 
 
-    const ownerMsg = `
+  const ownerMsg = `
 <div style="max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; font-family: 'Helvetica Neue', Arial, sans-serif; color: #333333; line-height: 1.5; border: 1px solid #eeeeee; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);">
   <!-- Header -->
   <div style="text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #eeeeee;">
@@ -100,7 +103,7 @@ exports.sendBookingConfirmation = async ({ customerEmail, customerName, ownerEma
       </tr>
       <tr>
         <td style="padding: 8px 0; border-bottom: 1px solid #dddddd;"><strong>Date & Time:</strong></td>
-        <td style="padding: 8px 0; border-bottom: 1px solid #dddddd; color: #3e9776;">${formattedTime}</td>
+        <td style="padding: 8px 0; border-bottom: 1px solid #dddddd; color: #3e9776;">${localDateString}</td>
       </tr>
     </table>
     
@@ -137,19 +140,19 @@ exports.sendBookingConfirmation = async ({ customerEmail, customerName, ownerEma
 </div>
 `;
 
-    // Send to customer
-    await transporter.sendMail({
-        from: `"Tranquility Nails & Spa" <${process.env.EMAIL_USER}>`,
-        to: customerEmail,
-        subject: 'Your Appointment Confirmation',
-        html: customerMsg
-    });
+  // Send to customer
+  await transporter.sendMail({
+    from: `"Tranquility Nails & Spa" <${process.env.EMAIL_USER}>`,
+    to: customerEmail,
+    subject: 'Your Appointment Confirmation',
+    html: customerMsg
+  });
 
-    // Send to owner
-    await transporter.sendMail({
-        from: `"Tranquility Nails & Spa" <${process.env.EMAIL_USER}>`,
-        to: ownerEmail,
-        subject: 'New Booking Notification',
-        html: ownerMsg
-    });
+  // Send to owner
+  await transporter.sendMail({
+    from: `"Tranquility Nails & Spa" <${process.env.EMAIL_USER}>`,
+    to: ownerEmail,
+    subject: 'New Booking Notification',
+    html: ownerMsg
+  });
 };
