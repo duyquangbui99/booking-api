@@ -19,7 +19,7 @@ exports.sendBookingConfirmation = async ({ customerEmail, customerName, ownerEma
   <div style="max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; font-family: 'Helvetica Neue', Arial, sans-serif; color: #333333; line-height: 1.5; border: 1px solid #eeeeee; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);">
     <!-- Header with Logo -->
     <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eeeeee;">
-      <h1 style="color: #3e9776; margin: 0; font-weight: 300; font-size: 28px;">Tranquility Nails & Spa</h1>
+      <h1 style="color: #3e9776; margin: 0; font-weight: 300; font-size: 28px;">Quang BookSmart App</h1>
     </div>
     
     <!-- Confirmation Message -->
@@ -65,7 +65,7 @@ exports.sendBookingConfirmation = async ({ customerEmail, customerName, ownerEma
     <!-- Footer -->
     <div style="text-align: center; padding-top: 20px; border-top: 1px solid #eeeeee; color: #999999; font-size: 14px;">
       <p style="margin-bottom: 5px;">Warm regards,</p>
-      <p style="margin-bottom: 15px;"><strong>Tranquility Nails & Spa</strong></p>
+      <p style="margin-bottom: 15px;"><strong>Quang BookSmart App</strong></p>
       <p style="font-size: 12px;">123 Serenity Ave • Relaxation City, RC 12345 • (555) 123-4567</p>
     </div>
   </div>
@@ -76,7 +76,7 @@ exports.sendBookingConfirmation = async ({ customerEmail, customerName, ownerEma
 <div style="max-width: 600px; margin: 0 auto; padding: 30px; background-color: #ffffff; font-family: 'Helvetica Neue', Arial, sans-serif; color: #333333; line-height: 1.5; border: 1px solid #eeeeee; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);">
   <!-- Header -->
   <div style="text-align: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #eeeeee;">
-    <h1 style="color: #3e9776; margin: 0; font-weight: 300; font-size: 28px;">Tranquility Nails & Spa</h1>
+    <h1 style="color: #3e9776; margin: 0; font-weight: 300; font-size: 28px;">Quang BookSmart App</h1>
   </div>
   
   <!-- Notification Header -->
@@ -142,7 +142,7 @@ exports.sendBookingConfirmation = async ({ customerEmail, customerName, ownerEma
 
   // Send to customer
   await transporter.sendMail({
-    from: `"Tranquility Nails & Spa" <${process.env.EMAIL_USER}>`,
+    from: `"Quang BookSmart App" <${process.env.EMAIL_USER}>`,
     to: customerEmail,
     subject: 'Your Appointment Confirmation',
     html: customerMsg
@@ -150,7 +150,7 @@ exports.sendBookingConfirmation = async ({ customerEmail, customerName, ownerEma
 
   // Send to owner
   await transporter.sendMail({
-    from: `"Tranquility Nails & Spa" <${process.env.EMAIL_USER}>`,
+    from: `"Quang BookSmart App" <${process.env.EMAIL_USER}>`,
     to: ownerEmail,
     subject: 'New Booking Notification',
     html: ownerMsg

@@ -3,9 +3,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 exports.login = async (req, res) => {
-    const { name, pin } = req.body;
+    const nameInput = req.body.name.trim().toLowerCase();
+    const pin = req.body.pin;
     try {
-        const user = await User.findOne({ name });
+        const user = await User.findOne({ name: { $regex: new RegExp(`^${nameInput}$`, 'i') } });
         if (!user) return res.status(404).json({ message: 'User not found' });
 
         // Role-based login logic
